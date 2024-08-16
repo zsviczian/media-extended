@@ -16,9 +16,29 @@ const generalPlayerRules = [
   "[data-player]",
 ];
 
+type MyTrustedTypesPolicy = {
+  createScript: (code: string) => TrustedScript;
+  name: string;
+}
+declare global {
+  // @ts-ignore
+  function eval(code: TrustedScript): any;
+}
+
 export default class MediaPlugin extends LifeCycle {
-  constructor(public controller: MsgCtrlRemote) {
+  #trustedTypesPolicy:
+    | MyTrustedTypesPolicy
+    | undefined;
+  eval(code: string): any {
+    if (this.#trustedTypesPolicy) {
+      return window.eval(this.#trustedTypesPolicy.createScript(code));
+    }
+    return window.eval(code);
+  }
+
+  constructor(public controller: MsgCtrlRemote, policy?: MyTrustedTypesPolicy) {
     super();
+    this.#trustedTypesPolicy = policy;
     this.register(() => controller.unload());
   }
 
@@ -47,19 +67,19 @@ export default class MediaPlugin extends LifeCycle {
     this.register(
       this.controller.on("mx-toggle-controls", ({ payload: showWebsite }) => {
         document.body.classList.toggle("mx-show-controls", showWebsite);
-      }),
+      })
     );
     if (isNativePlayer) {
       this.register(
         this.controller.on("mx-toggle-controls", ({ payload: showWebsite }) => {
           this.media.controls = showWebsite;
-        }),
+        })
       );
     }
     this.register(
       this.controller.on("mx-toggle-webfs", ({ payload: enableWebFs }) => {
         document.body.classList.toggle("mx-fs-enable", enableWebFs);
-      }),
+      })
     );
     document.body.classList.add("mx-play-ready");
     this.controller.send("mx-play-ready", void 0);
@@ -111,7 +131,7 @@ export default class MediaPlugin extends LifeCycle {
    */
   async untilMediaReady(
     event: keyof typeof readyStateEventMap = "canplay",
-    timeout = 5e3,
+    timeout = 5e3
   ) {
     if (this.media.readyState >= readyStateEventMap[event]) return;
     let timeoutId = -1;

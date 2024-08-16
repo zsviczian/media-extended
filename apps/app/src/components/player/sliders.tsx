@@ -17,7 +17,7 @@ export function Volume() {
 
   return (
     <Slider
-      className="group relative inline-flex h-10 w-full max-w-[80px] cursor-pointer touch-none select-none items-center outline-none"
+      className="inline-flex h-10 w-full max-w-[80px] cursor-pointer items-center outline-none"
       value={[volume * 100]}
       onValueChange={([value]) => {
         remote.changeVolume(value / 100);
