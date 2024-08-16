@@ -6,6 +6,7 @@ import { require } from "./require";
 
 const policy = window.trustedTypes?.createPolicy("mx", {
   createScript: (code) => code,
+  createHTML: (code) => code,
 });
 
 export async function loadPlugin(

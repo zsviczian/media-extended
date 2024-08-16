@@ -4,18 +4,26 @@ import { json } from "@/lib/json";
 declare const __USERSCRIPT__: string;
 
 process.once("document-start", () => {
-  // if (!window.location.hostname.endsWith("bilibili.com")) {
-  //   return;
-  // }
   console.log("preload.js");
-  const script = document.createElement("script");
   const scriptId = "monkey-patch-xmlhttprequest";
-  script.id = scriptId;
-  script.textContent =
+  const script =
     `try{` +
     __USERSCRIPT__ +
     `}finally{` +
     json`document.getElementById(${scriptId})?.remove();` +
     `}`;
+  // if (!window.location.hostname.endsWith("bilibili.com")) {
+  //   return;
+  // }
+  const scriptEl = document.createElement("script");
+  scriptEl.id = scriptId;
+  if (window.trustedTypes) {
+    const policy = window.trustedTypes.createPolicy("preload", {
+      createScript: (src) => src,
+    });
+    scriptEl.textContent = policy.createScript(script) as any;
+  } else {
+    scriptEl.textContent = script;
+  }
   document.documentElement.prepend(script);
 });

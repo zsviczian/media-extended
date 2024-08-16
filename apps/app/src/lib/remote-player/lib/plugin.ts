@@ -18,22 +18,39 @@ const generalPlayerRules = [
 
 type MyTrustedTypesPolicy = {
   createScript: (code: string) => TrustedScript;
+  createHTML: (code: string) => TrustedHTML;
   name: string;
-}
+};
 declare global {
   // @ts-ignore
   function eval(code: TrustedScript): any;
 }
 
 export default class MediaPlugin extends LifeCycle {
-  #trustedTypesPolicy:
-    | MyTrustedTypesPolicy
-    | undefined;
+  #trustedTypesPolicy: MyTrustedTypesPolicy | undefined;
   eval(code: string): any {
     if (this.#trustedTypesPolicy) {
       return window.eval(this.#trustedTypesPolicy.createScript(code));
     }
     return window.eval(code);
+  }
+  parseHTML(text: string) {
+    if (this.#trustedTypesPolicy) {
+      return new DOMParser().parseFromString(
+        this.#trustedTypesPolicy.createHTML(text) as any,
+        "text/html"
+      );
+    }
+    return new DOMParser().parseFromString(text, "text/html");
+  }
+  parseXML(text: string) {
+    if (this.#trustedTypesPolicy) {
+      return new DOMParser().parseFromString(
+        this.#trustedTypesPolicy.createHTML(text) as any,
+        "text/xml"
+      );
+    }
+    return new DOMParser().parseFromString(text, "text/xml");
   }
 
   constructor(public controller: MsgCtrlRemote, policy?: MyTrustedTypesPolicy) {

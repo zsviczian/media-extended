@@ -89,7 +89,7 @@ const { waitForSelector, MediaPlugin } = requireMx();
 export default class YouTubePlugin extends MediaPlugin {
   async findMedia(): Promise<HTMLMediaElement> {
     const media = await waitForSelector<HTMLMediaElement>(
-      "ytd-app #movie_player video",
+      "ytd-app #movie_player video"
     );
     this.app = media.closest<HTMLElement>("ytd-app")!;
     this.moviePlayer = media.closest<HTMLElement>("#movie_player")!;
@@ -129,13 +129,6 @@ export default class YouTubePlugin extends MediaPlugin {
       };
     });
   }
-  #parser = new DOMParser();
-  #decodeHTML(text: string) {
-    return (
-      this.#parser.parseFromString(text, "text/html").documentElement
-        .textContent ?? text
-    );
-  }
 
   async getTrack(_id: string): Promise<VTTContent | null> {
     const src = this.captionSrc.get(_id);
@@ -143,7 +136,7 @@ export default class YouTubePlugin extends MediaPlugin {
     const resp = await fetch(src.url);
     if (!resp.ok) return null;
     const xml = await resp.text();
-    const xmlDoc = this.#parser.parseFromString(xml, "text/xml");
+    const xmlDoc = this.parseXML(xml);
     const textElements = [...xmlDoc.getElementsByTagName("text")];
     const metadata: Record<string, string> = {
       Kind: "subtitles",
@@ -154,7 +147,9 @@ export default class YouTubePlugin extends MediaPlugin {
         const startTime = parseFloat(cue.getAttribute("start")!);
         const dur = parseFloat(cue.getAttribute("dur")!);
         const endTime = startTime + dur;
-        const text = this.#decodeHTML(cue.textContent!);
+        const text =
+          this.parseHTML(cue.textContent!).documentElement.textContent ??
+          cue.textContent ?? "";
         return { id: i.toString(), startTime, endTime, text };
       }),
       metadata,
@@ -203,7 +198,7 @@ export default class YouTubePlugin extends MediaPlugin {
       'button.ytp-button[data-tooltip-target-id="ytp-autonav-toggle-button"]';
     const autoPlayButton = await waitForSelector<HTMLButtonElement>(
       autoPlayButtonSelector,
-      this.app,
+      this.app
     );
 
     if (!autoPlayButton) {
@@ -239,7 +234,7 @@ export default class YouTubePlugin extends MediaPlugin {
 
     (async () => {
       const fsButton = await waitForSelector<HTMLButtonElement>(
-        "#movie_player .ytp-size-button",
+        "#movie_player .ytp-size-button"
       );
       let retries = 0;
       while (!this.isCinematicsMode() && retries++ < 5) {
