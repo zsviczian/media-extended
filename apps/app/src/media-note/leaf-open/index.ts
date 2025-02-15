@@ -281,8 +281,23 @@ export class LeafOpener extends Component {
       }
       return opened;
     }
+    //add logic here to find leaf
+    let leaf:WorkspaceLeaf|undefined;
 
-    const leaf = this.app.workspace.getLeaf(newLeaf as any, direction);
+    //@ts-ignore
+    const mediaName = this.app.workspace.activeLeaf?.view?.file?.basename;
+    this.app.workspace.iterateAllLeaves((l)=>{
+      if(!l.view) return;
+      //@ts-ignore
+      if(!l.view.file) return;
+      //@ts-ignore
+      if(l.view.file.basename.startsWith(`Media Note - ${mediaName}`)) {
+          leaf =  l;
+      }
+    })
+    if(!leaf) {
+      leaf = this.app.workspace.getLeaf(newLeaf as any, direction);
+    }
     await leaf.openFile(note, { state: { mode: "source" } });
     return {
       file: note,

@@ -8,7 +8,7 @@
     "lint": "eslint src/ --ext .ts,.tsx --fix"
   },
   "devDependencies": {
-    "@codemirror/language": "../../packages/cm-language",
+    "@codemirror/language": "github:lishid/cm-language#2644bfc27afda707a7e1f3aedaf3ca7120f63cd9",
     "@codemirror/state": "^6.0.0",
     "@codemirror/view": "^6.0.0",
     "@electron/remote": "^2.1.1",
@@ -41,6 +41,7 @@
     "typescript": "~5.1.6"
   },
   "dependencies": {
+    "media-captions": "1.0.4",
     "@floating-ui/react-dom": "^2.0.8",
     "@radix-ui/primitive": "^1.0.1",
     "@radix-ui/react-arrow": "1.0.3",
